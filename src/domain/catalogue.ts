@@ -23,6 +23,8 @@ export const catalogue: FurnitureTemplate[] = [
   furniture('bookcase', 'Bookcase', 'Storage', 0.85, 0.3, 1.65, '#c7b392'),
   furniture('tv-stand', 'TV stand', 'Storage', 1.4, 0.35, 0.5, '#a9977e'),
   furniture('media-unit', 'TV unit', 'Storage', 2.78, 0.4, 1.45, '#eeeae3'),
+  furniture('cabinet', 'Corner cabinet', 'Storage', 0.7, 0.4, 1.2, '#eeeae3'),
+  furniture('wall-shelves', 'Wall shelves', 'Storage', 1.6, 0.23, 2, '#ac784d'),
   furniture('rug', 'Woven rug', 'Decor', 2, 1.4, 0.015, '#e4d8c5'),
   furniture('floor-lamp', 'Floor lamp', 'Lighting', 0.4, 0.4, 1.55, '#b6aa94'),
   furniture('plant', 'Indoor plant', 'Decor', 0.45, 0.45, 0.85, '#6e886a'),

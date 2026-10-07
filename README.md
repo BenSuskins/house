@@ -44,8 +44,11 @@ Door openings do not trigger a wall warning.
 
 The server creates one furnished starter design when it initializes the database.
 New designs use a furniture preset based on the room photos. The furniture dimensions and positions are estimates.
-Bedroom two contains the desk and storage daybed. Bedroom three contains the sofa and triple-monitor desk.
-Bedroom two has one window and a bookcase against the shared wall. Bedroom three has two windows and no bookcase.
+Bedroom two contains the sofa and triple-monitor desk. Bedroom three contains the desk, storage daybed, and bookcase.
+Bedroom two has front and side windows. Bedroom three has one side window.
+The main bathroom has a small front window. Its size and position are estimates.
+Both floors mirror the original plan from left to right. The kitchen is on the right in top view.
+The main bedroom has an open wardrobe area. Its enclosure walls are removed.
 The lounge contains two sofas, an ottoman, a coffee table, and a TV unit.
 The main bedroom contains the bed, bedside tables, dressing table, and wardrobes.
 Dining furniture follows the illustrated plan because the room photos do not show it.
@@ -69,9 +72,17 @@ The first floor follows the stepped bedroom boundaries and L-shaped landing in t
 The listed bedroom dimensions guide their main areas. Missing recess and passage dimensions remain estimates.
 Use measured dimensions before ordering furniture. The editor is a visual plan.
 
-House model version 2 corrects the first floor. The server migrates version 1 designs once, in a transaction.
-The migration preserves furniture, floor finishes, and wall colours by room and wall side. New wall faces use neutral paint.
-The browser can recover a draft from version 1 as a new design. Review furniture positions against the corrected walls.
+House model version 4 mirrors both floors and corrects the wardrobe, windows, and bedroom furniture.
+It adds kitchen units, a fridge, garden doors, lounge shelves, and a corner cabinet.
+The dining area has no cabinets. The table has two chairs toward the front window and two toward the kitchen.
+The house is 60 centimetres wider. The toilet, understairs cupboard, and hallway each gain 30 centimetres.
+The cupboard extends to the kitchen doorway. The stairs enter from the hallway and turn above the cupboard.
+The mirrored floor plan supplies the door positions and window locations, including both kitchen windows.
+The server migrates version 1 and 2 designs once, in a transaction.
+The migration mirrors saved furniture and swaps furniture between bedrooms two and three.
+It preserves furniture identifiers, dimensions, colours, floor finishes, and paint on retained wall faces.
+The browser can recover an older draft as a new design. Review furniture positions against the corrected walls.
+Version 3 designs require a fresh design. The deployment keeps a database backup before this reset.
 
 The private files stay in ignored `reference/`. The app does not serve or copy them.
 The Docker build context uses a file allowlist. It excludes references, plans, databases, and local environment files.

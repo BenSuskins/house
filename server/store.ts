@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { createDesign, failure, identifier } from '../src/domain/editor';
 import { validateContent } from '../src/domain/validation';
+import { house } from '../src/domain/house';
 import { migrateContent } from '../src/domain/migration';
 import type { Design, DesignContent, DesignSummary, Result } from '../src/domain/types';
 
@@ -64,7 +65,7 @@ export class SqliteDesignStore implements DesignStore {
     this.database.transaction(() => {
       for (const row of this.database.prepare('SELECT * FROM designs').all() as DatabaseRow[]) {
         const content = JSON.parse(row.content) as DesignContent;
-        if (content.houseVersion !== 1) continue;
+        if (content.houseVersion === house.version) continue;
         const migrated = migrateContent(content);
         if (!migrated.ok) throw new Error(migrated.error.message);
         this.database.prepare('UPDATE designs SET content = ?, revision = ?, updated_at = ? WHERE id = ?').run(JSON.stringify(migrated.value), row.revision + 1, new Date().toISOString(), row.id);

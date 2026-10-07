@@ -1,7 +1,7 @@
 import { Copy, Trash2, RotateCw, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, X, Paintbrush, Move } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { catalogue, paintColours } from '../domain/catalogue';
-import { house } from '../domain/house';
+import { house, wallName } from '../domain/house';
 import { wallOverlaps, type Edit } from '../domain/editor';
 import type { Design, FloorId, Selection } from '../domain/types';
 
@@ -30,7 +30,7 @@ export function Inspector({ design, selection, floorId, apply, select, close }: 
   const face = selection?.type === 'wall' ? floor.walls.flatMap((wall) => wall.faces).find((face) => face.id === selection.id) : undefined;
   const template = catalogue.find((template) => template.id === item?.templateId);
   const title = template?.name ?? room?.name ?? (face?.roomId ? floor.rooms.find((room) => room.id === face.roomId)?.name : 'Wall face') ?? 'Wall face';
-  const faces = floor.walls.flatMap((wall) => wall.faces.map((face) => ({ ...face, wallName: wall.id.replace(`${floorId}-`, '').replaceAll('-', ' ') })));
+  const faces = floor.walls.flatMap((wall) => wall.faces.map((face) => ({ ...face, wallName: wallName(wall) })));
   return <div className="inspector-content" data-testid="inspector">
     <div className="panel-heading"><div><p className="eyebrow">{item ? 'Furniture' : face ? 'Wall finish' : 'Room finishes'}</p><h2>{title}</h2></div><button className="icon-button" aria-label="Close properties" onClick={close}><X size={18} /></button></div>
     {item && <>

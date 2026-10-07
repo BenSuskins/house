@@ -4,6 +4,22 @@ import { house } from '../src/domain/house';
 import { validateContent } from '../src/domain/validation';
 
 describe('the room photo furniture preset', () => {
+  it('places two dining chairs on the kitchen side and two on the front window side', () => {
+    const furniture = createDesign('My house').furniture;
+    const table = furniture.find((item) => item.templateId === 'dining-table')!;
+    const chairs = furniture.filter((item) => item.templateId === 'dining-chair');
+    expect(chairs).toHaveLength(4);
+    const kitchen = chairs.filter((item) => item.position.z < table.position.z);
+    const window = chairs.filter((item) => item.position.z > table.position.z);
+    expect(kitchen).toHaveLength(2);
+    expect(window).toHaveLength(2);
+    expect(kitchen.every((item) => item.rotation === 0)).toBe(true);
+    expect(window.every((item) => item.rotation === 180)).toBe(true);
+    expect(chairs.every((item) => Math.abs(item.position.x - table.position.x) < table.dimensions.width / 2)).toBe(true);
+    expect(new Set(kitchen.map((item) => item.position.x)).size).toBe(2);
+    expect(new Set(window.map((item) => item.position.x)).size).toBe(2);
+  });
+
   it('starts the lounge with the two photographed sofas and ottoman inside the room', () => {
     const design = createDesign('My house');
     const sofas = design.furniture.filter((item) => item.floorId === 'ground' && item.templateId === 'sofa');
@@ -24,12 +40,12 @@ describe('the room photo furniture preset', () => {
 
   it('uses the confirmed bedroom numbers for the daybed and triple-monitor desk', () => {
     const design = createDesign('My house');
-    const bedroomTwo = design.furniture.filter((item) => item.floorId === 'first' && item.position.x > 5.4 && item.position.z > 2.62);
-    const bedroomThree = design.furniture.filter((item) => item.floorId === 'first' && item.position.x > 5.4 && item.position.z < 2.62);
-    expect(bedroomTwo.map((item) => item.templateId)).toEqual(expect.arrayContaining(['daybed', 'desk', 'desk-chair', 'bookcase']));
-    expect(bedroomThree.map((item) => item.templateId)).toEqual(expect.arrayContaining(['sofa', 'computer-desk', 'desk-chair']));
-    expect(bedroomThree.some((item) => item.templateId === 'bookcase')).toBe(false);
-    expect(bedroomTwo.find((item) => item.templateId === 'bookcase')).toMatchObject({ position: { z: 2.87 }, rotation: 0 });
+    const bedroomTwo = design.furniture.filter((item) => item.floorId === 'first' && item.position.x < 3.6 && item.position.z > 2.62);
+    const bedroomThree = design.furniture.filter((item) => item.floorId === 'first' && item.position.x < 3.6 && item.position.z < 2.62);
+    expect(bedroomTwo.map((item) => item.templateId)).toEqual(expect.arrayContaining(['sofa', 'computer-desk', 'desk-chair']));
+    expect(bedroomThree.map((item) => item.templateId)).toEqual(expect.arrayContaining(['daybed', 'desk', 'desk-chair', 'bookcase']));
+    expect(bedroomTwo.some((item) => item.templateId === 'bookcase')).toBe(false);
+    expect(bedroomThree.find((item) => item.templateId === 'bookcase')).toMatchObject({ position: { z: 2.37 }, rotation: 180 });
     expect(design.furniture.filter((item) => item.floorId === 'first' && ['double-bed', 'single-bed'].includes(item.templateId))).toHaveLength(1);
   });
 

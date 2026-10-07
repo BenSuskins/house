@@ -45,6 +45,17 @@ function FurnitureModel({ item }: { item: FurnitureItem }) {
     <Block position={[0, height * 0.76, -depth * 0.3]} size={[width * 0.46, height * 0.4, 0.05]} colour="#28312f" />
     <Block position={[0, height * 0.76, -depth * 0.3 + 0.03]} size={[width * 0.435, height * 0.36, 0.006]} colour="#53665d" />
   </>;
+  if (item.templateId === 'wall-shelves') return <>
+    <Block position={[0, height * 0.85, 0]} size={[width, 0.045, depth]} colour={colour} />
+    <Block position={[-width * 0.3, height * 0.61, 0]} size={[width * 0.4, 0.045, depth]} colour={colour} />
+    {[-0.38, -0.24, -0.1].map((position, index) => <Block key={position} position={[width * position, height * 0.85 + 0.12, 0]} size={[width * 0.1, 0.2, depth * 0.65]} colour={['#53665d', '#c7b392', '#656d7b'][index]} />)}
+  </>;
+  if (item.templateId === 'cabinet') return <>
+    <Block position={[0, height / 2, 0]} size={[width, height, depth]} colour={colour} />
+    <Block position={[0, height + 0.015, 0]} size={[width, 0.03, depth]} colour="#ac784d" />
+    <Block position={[0, height / 2, depth / 2 + 0.005]} size={[0.01, height * 0.94, 0.01]} colour={darken(colour)} />
+    {[-1, 1].map((side) => <Block key={side} position={[side * 0.035, height * 0.55, depth / 2 + 0.018]} size={[0.012, 0.14, 0.025]} colour="#444a48" />)}
+  </>;
   if (['dining-chair', 'desk-chair'].includes(item.templateId)) return <>{legs(height * 0.47)}<Block position={[0, height * 0.52, 0]} size={[width, height * 0.12, depth]} colour={colour} round /><Block position={[0, height * 0.78, -depth * 0.44]} size={[width, height * 0.44, depth * 0.12]} colour={colour} round /></>;
   if (['dining-table', 'coffee-table', 'desk', 'bedside-table', 'stool'].includes(item.templateId)) return <>{legs(height * 0.9)}<Block position={[0, height * 0.95, 0]} size={[width, height * 0.1, depth]} colour={colour} round />{item.templateId === 'bedside-table' && <Block position={[0, height * 0.6, 0]} size={[width * 0.9, height * 0.5, depth * 0.9]} colour={colour} />}</>;
   if (item.templateId.includes('bed')) return <>
@@ -113,17 +124,30 @@ function WallModel({ wall, design, height, selection, select }: { wall: Wall; de
   cuts.slice(0, -1).forEach((start, index) => {
     const end = cuts[index + 1]; const midpoint = (start + end) / 2;
     const opening = wall.openings.find((opening) => midpoint >= opening.start && midpoint <= opening.start + opening.width);
-    if (!opening) box(`solid-${index}`, start, end, 0, height);
-    else { box(`below-${index}`, start, end, 0, Math.min(height, opening.bottom)); box(`above-${index}`, start, end, opening.bottom + opening.height, height); }
+    if (!opening && wall.heights) {
+      const heights = wall.heights;
+      Array.from({ length: 24 }, (_, step) => {
+        const left = start + (end - start) * step / 24;
+        const right = start + (end - start) * (step + 1) / 24;
+        const top = heights.start + (heights.end - heights.start) * (left + right) / 2 / length;
+        box(`slope-${index}-${step}`, left, right, 0, Math.min(height, top));
+      });
+    } else if (!opening) box(`solid-${index}`, start, end, 0, height);
+    else { box(`below-${index}`, start, end, 0, Math.min(height, opening.bottom)); box(`above-${index}`, start, end, opening.bottom + opening.height, Math.min(height, wall.heights?.end ?? height)); }
   });
   return <group position={[wall.start.x, 0, wall.start.z]} rotation={[0, -Math.atan2(wall.end.z - wall.start.z, wall.end.x - wall.start.x), 0]}>
     {pieces}
-    {wall.openings.map((opening, index) => opening.type === 'window' ? <group key={index} position={[opening.start + opening.width / 2, Math.min(height + 0.025, opening.bottom + opening.height / 2), 0]}>
+    {wall.openings.map((opening, index) => opening.leaves === 2 ? opening.span && opening.span.start < 0 ? null : <group key={index} position={[(opening.span?.start ?? opening.start) + (opening.span?.width ?? opening.width) / 2, 0, 0]}>
+      <mesh position={[0, Math.min(height, opening.height) / 2, 0]}><boxGeometry args={[opening.span?.width ?? opening.width, Math.min(height, opening.height), 0.025]} /><meshStandardMaterial color="#d5e3e3" transparent opacity={0.35} roughness={0.1} /></mesh>
+      {[-1, 0, 1].map((side) => <Block key={side} position={[side * (opening.span?.width ?? opening.width) / 2, Math.min(height, opening.height) / 2, 0]} size={[0.045, Math.min(height, opening.height), 0.065]} colour="#f3f2eb" />)}
+      <Block position={[0, Math.min(height, opening.height), 0]} size={[opening.span?.width ?? opening.width, 0.045, 0.065]} colour="#f3f2eb" />
+    </group> : opening.type === 'window' ? <group key={index} position={[opening.start + opening.width / 2, Math.min(height + 0.025, opening.bottom + opening.height / 2), 0]}>
       <mesh><boxGeometry args={[opening.width, Math.max(0.06, Math.min(opening.height, height - opening.bottom)), 0.035]} /><meshStandardMaterial color="#d5e3e3" transparent opacity={0.48} roughness={0.1} /></mesh>
       <Block position={[0, Math.max(0.06, Math.min(opening.height, height - opening.bottom)) / 2, 0]} size={[opening.width, 0.035, 0.09]} colour="#e5e5de" />
-    </group> : <group key={index} position={[opening.start, 0, 0]}>
-      <Line points={Array.from({ length: 17 }, (_, step) => { const angle = step / 16 * Math.PI / 2; return [Math.cos(angle) * opening.width, 0.025, Math.sin(angle) * opening.width] as [number, number, number]; })} color="#c4baaa" lineWidth={0.5} />
-      <Block position={[opening.width / 2, 0.028, 0]} size={[opening.width, 0.025, 0.12]} colour="#c5b69a" />
+    </group> : <group key={index} position={[opening.start + (opening.hinge === 'end' ? opening.width : 0), 0, 0]}>
+      <Line points={Array.from({ length: 17 }, (_, step) => { const angle = step / 16 * Math.PI / 2; return [(opening.hinge === 'end' ? -1 : 1) * Math.cos(angle) * opening.width, 0.025, (opening.swing ?? 1) * Math.sin(angle) * opening.width] as [number, number, number]; })} color="#c4baaa" lineWidth={0.5} />
+      <Line points={[[0, 0.03, 0], [(opening.hinge === 'end' ? -1 : 1) * opening.width * 0.5, 0.03, (opening.swing ?? 1) * opening.width * Math.sqrt(3) / 2]]} color="#a89478" lineWidth={1.5} />
+      <Block position={[(opening.hinge === 'end' ? -1 : 1) * opening.width / 2, 0.028, 0]} size={[opening.width, 0.025, 0.12]} colour="#c5b69a" />
     </group>)}
   </group>;
 }
@@ -154,14 +178,23 @@ function RoomFloor({ room, design, select, selected }: { room: Room; design: Des
 
 function FixedFitting({ fitting }: { fitting: Fitting }) {
   const { width, depth, height } = fitting.dimensions;
-  return <group position={[fitting.position.x, 0.02, fitting.position.z]} rotation={[0, -fitting.rotation * Math.PI / 180, 0]}>
-    {fitting.type === 'counter' ? <><Block position={[0, height / 2, 0]} size={[width, height, depth]} colour="#cfc5af" /><Block position={[0, height, 0]} size={[width + 0.025, 0.055, depth + 0.025]} colour="#eeebe2" />{Array.from({ length: Math.max(1, Math.round(width / 0.6)) }, (_, index) => <Block key={index} position={[-width / 2 + (index + 0.5) * width / Math.max(1, Math.round(width / 0.6)), height * 0.6, depth / 2 + 0.01]} size={[0.1, 0.012, 0.02]} colour="#9f998a" />)}</> : fitting.type === 'hob' ? <><Block position={[0, height, 0]} size={[width, 0.025, depth]} colour="#343b38" />{[-1, 1].flatMap((x) => [-1, 1].map((z) => <mesh key={`${x}-${z}`} position={[x * width * 0.24, height + 0.017, z * depth * 0.24]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[width * 0.13, 16]} /><meshStandardMaterial color="#151e1a" /></mesh>))}</> : fitting.type === 'toilet' ? <><Block position={[0, height * 0.52, depth * 0.16]} size={[width * 0.72, height * 0.6, depth * 0.66]} colour="#f4f3ed" round /><Block position={[0, height * 0.78, -depth * 0.33]} size={[width, height * 0.42, depth * 0.27]} colour="#f7f6f0" round /><mesh position={[0, height * 0.81, depth * 0.12]} rotation={[-Math.PI / 2, 0, 0]} scale={[width * 0.43, depth * 0.42, 1]}><ringGeometry args={[0.65, 1, 24]} /><meshStandardMaterial color="#e7e8e1" side={DoubleSide} /></mesh></> : fitting.type === 'sink' ? <><Block position={[0, height * 0.53, 0]} size={[width, height * 0.95, depth]} colour="#d3c9b5" /><Block position={[0, height, 0]} size={[width + 0.02, 0.07, depth + 0.02]} colour="#f4f3ed" round /><Block position={[0, height + 0.038, 0]} size={[width * 0.68, 0.008, depth * 0.62]} colour="#bec5bf" round /><Block position={[0, height + 0.1, -depth * 0.34]} size={[0.025, 0.16, 0.035]} colour="#9ca5a1" /></> : <><Block position={[0, height / 2, 0]} size={[width, height, depth]} colour="#f6f5ef" round /><Block position={[0, height + 0.006, 0]} size={[width * 0.75, 0.012, depth * 0.86]} colour="#dce3df" round />{fitting.type === 'shower' && <Block position={[width / 2, 0.62, 0]} size={[0.03, 1.15, depth]} colour="#d8e3df" />}</>}
+  if (['cabinet', 'wall-cabinet', 'fridge', 'oven'].includes(fitting.type)) return <group position={[fitting.position.x, fitting.elevation ?? 0.02, fitting.position.z]} rotation={[0, -fitting.rotation * Math.PI / 180, 0]}>
+    <Block position={[0, height / 2, 0]} size={[width, height, depth]} colour="#f3f2eb" />
+    {fitting.type === 'oven' ? <><Block position={[0, height * 0.47, depth / 2 + 0.006]} size={[width * 0.88, height * 0.66, 0.02]} colour="#29302d" /><Block position={[0, height * 0.73, depth / 2 + 0.035]} size={[width * 0.74, 0.025, 0.035]} colour="#a7aaa6" /></> : fitting.type === 'fridge' ? <><Block position={[0, height * 0.29, depth / 2 + 0.006]} size={[width * 0.97, 0.012, 0.012]} colour="#c3c5bd" />{[0.2, 0.6].map((level) => <Block key={level} position={[-width * 0.34, height * level, depth / 2 + 0.025]} size={[0.022, 0.28, 0.04]} colour="#333b37" />)}</> : <><Block position={[0, height / 2, depth / 2 + 0.006]} size={[0.01, height * 0.94, 0.012]} colour="#c3c5bd" />{[-1, 1].map((side) => <Block key={side} position={[side * width * 0.08, height * 0.4, depth / 2 + 0.025]} size={[0.018, Math.min(0.3, height * 0.3), 0.035]} colour="#333b37" />)}</>}
+  </group>;
+  return <group position={[fitting.position.x, fitting.elevation ?? 0.02, fitting.position.z]} rotation={[0, -fitting.rotation * Math.PI / 180, 0]}>
+    {fitting.type === 'counter' ? <><Block position={[0, height / 2, 0]} size={[width, height, depth]} colour="#f3f2eb" /><Block position={[0, height, 0]} size={[width + 0.025, 0.055, depth + 0.025]} colour="#c6c5bf" />{Array.from({ length: Math.max(1, Math.round(width / 0.6)) }, (_, index) => <Block key={index} position={[-width / 2 + (index + 0.5) * width / Math.max(1, Math.round(width / 0.6)), height * 0.6, depth / 2 + 0.01]} size={[0.1, 0.012, 0.02]} colour="#333b37" />)}</> : fitting.type === 'hob' ? <><Block position={[0, height, 0]} size={[width, 0.025, depth]} colour="#343b38" />{[-1, 1].flatMap((x) => [-1, 1].map((z) => <mesh key={`${x}-${z}`} position={[x * width * 0.24, height + 0.017, z * depth * 0.24]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[width * 0.13, 16]} /><meshStandardMaterial color="#151e1a" /></mesh>))}</> : fitting.type === 'toilet' ? <><Block position={[0, height * 0.52, depth * 0.16]} size={[width * 0.72, height * 0.6, depth * 0.66]} colour="#f4f3ed" round /><Block position={[0, height * 0.78, -depth * 0.33]} size={[width, height * 0.42, depth * 0.27]} colour="#f7f6f0" round /><mesh position={[0, height * 0.81, depth * 0.12]} rotation={[-Math.PI / 2, 0, 0]} scale={[width * 0.43, depth * 0.42, 1]}><ringGeometry args={[0.65, 1, 24]} /><meshStandardMaterial color="#e7e8e1" side={DoubleSide} /></mesh></> : fitting.type === 'sink' ? <><Block position={[0, height * 0.53, 0]} size={[width, height * 0.95, depth]} colour="#d3c9b5" /><Block position={[0, height, 0]} size={[width + 0.02, 0.07, depth + 0.02]} colour="#f4f3ed" round /><Block position={[0, height + 0.038, 0]} size={[width * 0.68, 0.008, depth * 0.62]} colour="#bec5bf" round /><Block position={[0, height + 0.1, -depth * 0.34]} size={[0.025, 0.16, 0.035]} colour="#9ca5a1" /></> : <><Block position={[0, height / 2, 0]} size={[width, height, depth]} colour="#f6f5ef" round /><Block position={[0, height + 0.006, 0]} size={[width * 0.75, 0.012, depth * 0.86]} colour="#dce3df" round />{fitting.type === 'shower' && <Block position={[width / 2, 0.62, 0]} size={[0.03, 1.15, depth]} colour="#d8e3df" />}</>}
   </group>;
 }
 
 function Stairs({ floor }: { floor: HouseFloor }) {
-  return <group position={[floor.id === 'ground' ? 4.67 : 3.95, floor.id === 'ground' ? 0 : -1.0, 0.28]}>
-    {Array.from({ length: 10 }, (_, index) => <Block key={index} position={[0, (index + 1) * 0.10, index * 0.18]} size={[floor.id === 'ground' ? 0.77 : 0.74, 0.1, 0.19]} colour={index % 2 ? '#d8d2c4' : '#e4dfd2'} />)}
+  return <group position={[0, floor.id === 'ground' ? 0 : -house.wallHeight, 0]}>
+    {house.stairs?.flights.map((flight, flightIndex) => <group key={flightIndex}>{Array.from({ length: flight.steps }, (_, index) => {
+      const fraction = index / (flight.steps - 1);
+      const depth = Math.abs(flight.end.z - flight.start.z) / (flight.steps - 1);
+      return <Block key={index} position={[flight.start.x + (flight.end.x - flight.start.x) * fraction, flight.elevation + (index + 0.5) * flight.rise, flight.start.z + (flight.end.z - flight.start.z) * fraction]} size={[flight.width, flight.rise, depth + 0.01]} colour={index % 2 ? '#d8d2c4' : '#e4dfd2'} />;
+    })}</group>)}
+    {house.stairs?.turns.map((step, index) => <mesh key={index} rotation={[-Math.PI / 2, 0, 0]} position={[0, step.elevation, 0]} castShadow receiveShadow><extrudeGeometry args={[new Shape(step.polygon.map((point) => new Vector2(point.x, -point.z))), { depth: step.rise, bevelEnabled: false }]} /><meshStandardMaterial color={index % 2 ? '#d8d2c4' : '#e4dfd2'} /></mesh>)}
   </group>;
 }
 
@@ -175,15 +208,16 @@ function FloorSlab({ floor }: { floor: HouseFloor }) {
 }
 
 function CameraRig({ view, resetToken, zoomToken }: Pick<SceneProps, 'view' | 'resetToken' | 'zoomToken'>) {
-  const { camera, size, invalidate } = useThree();
+  const { camera, get, invalidate } = useThree();
   const controls = useThree((state) => state.controls) as unknown as { target: Vector3; update: () => void } | undefined;
   useEffect(() => {
+    const { size } = get();
     const centre = new Vector3(house.width / 2, 0, house.depth / 2);
     camera.position.copy(centre).add(view === 'top' ? new Vector3(0, 15, 0.001) : new Vector3(10, 12, 10));
     camera.up.set(0, 1, 0); camera.lookAt(centre);
     (camera as OrthographicCamera).zoom = Math.max(12, Math.min((size.width - 36) / (view === 'top' ? house.width + 0.8 : house.width + house.depth * 0.65), (size.height - 60) / (view === 'top' ? house.depth + 0.8 : house.depth * 0.55 + 3.2)));
     camera.updateProjectionMatrix(); controls?.target.copy(centre); controls?.update(); invalidate();
-  }, [view, resetToken, size.width, size.height, camera, controls, invalidate]);
+  }, [view, resetToken, camera, controls, get, invalidate]);
   const previousZoom = useRef(zoomToken);
   useEffect(() => { const difference = zoomToken - previousZoom.current; previousZoom.current = zoomToken; if (difference) { (camera as OrthographicCamera).zoom = Math.max(10, Math.min(180, (camera as OrthographicCamera).zoom * 1.2 ** difference)); camera.updateProjectionMatrix(); invalidate(); } }, [zoomToken, camera, invalidate]);
   return null;

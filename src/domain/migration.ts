@@ -1,5 +1,7 @@
 import { house } from './house';
 import { house as previousHouse } from './house-version-one';
+import { house as versionTwoHouse } from './house-version-two';
+import { migrateFurniture } from './furniture-migration';
 import { failure } from './editor';
 import { validateContent } from './validation';
 import type { DesignContent, Result, Wall } from './types';
@@ -19,11 +21,12 @@ const midpoint = (wall: Wall) => ({ x: (wall.start.x + wall.end.x) / 2, z: (wall
 
 export function migrateContent(design: DesignContent): Result<DesignContent> {
   if (design.houseVersion === house.version) return validateContent(design);
-  if (design.houseVersion !== 1) return failure('invalid', 'This house model version cannot be migrated.');
+  if (![1, 2].includes(design.houseVersion)) return failure('invalid', 'This house model version cannot be migrated.');
   if (!design.wallColours || typeof design.wallColours !== 'object' || Array.isArray(design.wallColours)) return failure('invalid', 'The previous design must contain all wall faces.');
-  const previousFaces = previousHouse.floors.flatMap((floor) => floor.walls.flatMap((wall) => wall.faces));
+  const sourceHouse = design.houseVersion === 1 ? previousHouse : versionTwoHouse;
+  const previousFaces = sourceHouse.floors.flatMap((floor) => floor.walls.flatMap((wall) => wall.faces));
   if (Object.keys(design.wallColours).length !== previousFaces.length || previousFaces.some((face) => !Object.hasOwn(design.wallColours, face.id))) return failure('invalid', 'The previous design must contain all wall faces.');
-  const wallColours = Object.fromEntries(house.floors.flatMap((floor) => {
+  const versionTwoColours = design.houseVersion === 2 ? design.wallColours : Object.fromEntries(versionTwoHouse.floors.flatMap((floor) => {
     const previousWalls = previousHouse.floors.find((previous) => previous.id === floor.id)!.walls;
     return floor.walls.flatMap((wall) => wall.faces.map((face, faceIndex) => {
       const perimeter = /-(back|front|left|right)-\d+$/.test(wall.id);
@@ -37,5 +40,6 @@ export function migrateContent(design: DesignContent): Result<DesignContent> {
       return [face.id, candidates[0] ? design.wallColours[candidates[0].face.id] : '#f2f0e9'];
     }));
   }));
-  return validateContent({ ...design, houseVersion: house.version, wallColours });
+  const wallColours = Object.fromEntries(house.floors.flatMap((floor) => floor.walls.flatMap((wall) => wall.faces.map((face) => [face.id, versionTwoColours[face.id]]))));
+  return validateContent({ ...design, houseVersion: house.version, wallColours, furniture: design.furniture.map(migrateFurniture) });
 }

@@ -1,5 +1,6 @@
 import { catalogue } from './catalogue';
 import { house } from './house';
+import { migrateFurniture } from './furniture-migration';
 import type { Design, FloorFinish, FloorId, FurnitureItem, Point, Result, Wall } from './types';
 
 export const identifier = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
@@ -12,14 +13,16 @@ const starterFurniture = (): FurnitureItem[] => {
   };
   return [
     place('sofa', 'ground', 7.6, 2.6, 90, { dimensions: { width: 1.95, depth: 0.9, height: 0.85 }, colour: '#56433f' }),
-    place('sofa', 'ground', 5.28, 2.4, 270, { dimensions: { width: 2.15, depth: 0.87, height: 0.85 }, colour: '#c2bcb4' }),
+    place('sofa', 'ground', 6.45, 4.68, 180, { dimensions: { width: 2.15, depth: 0.87, height: 0.85 }, colour: '#c2bcb4' }),
     place('ottoman', 'ground', 6.45, 3.15),
     place('coffee-table', 'ground', 6.45, 2.2, 0, { dimensions: { width: 0.75, depth: 0.55, height: 0.43 }, colour: '#ac784d' }),
     place('media-unit', 'ground', 6.45, 0.48),
-    place('plant', 'ground', 7.77, 1), place('plant', 'ground', 6.35, 4.77),
+    place('cabinet', 'ground', 5.11, 4.75, 270),
+    place('wall-shelves', 'ground', 7.05, 0.35),
+    place('plant', 'ground', 7.77, 1), place('plant', 'ground', 5.07, 1.25),
     place('dining-table', 'ground', 1.62, 3.62),
-    place('dining-chair', 'ground', 1.62, 2.86), place('dining-chair', 'ground', 1.62, 4.38, 180),
-    place('dining-chair', 'ground', 0.61, 3.62, 270), place('dining-chair', 'ground', 2.63, 3.62, 90),
+    place('dining-chair', 'ground', 1.27, 2.86), place('dining-chair', 'ground', 1.97, 2.86),
+    place('dining-chair', 'ground', 1.27, 4.38, 180), place('dining-chair', 'ground', 1.97, 4.38, 180),
     place('plant', 'ground', 2.99, 4.77),
     place('stool', 'ground', 3.8, 4.11),
     place('double-bed', 'first', 1.78, 1.49, 0, { colour: '#b2a491' }),
@@ -36,7 +39,7 @@ const starterFurniture = (): FurnitureItem[] => {
     place('computer-desk', 'first', 5.11, 1.05, 270),
     place('desk-chair', 'first', 5.92, 1.05, 90, { colour: '#30383b' }),
     place('floor-lamp', 'first', 6.85, 0.38, 0, { dimensions: { width: 0.28, depth: 0.28, height: 1.4 }, colour: '#ebe1cf' }),
-  ].map((item) => item.position.x >= 4.5 ? { ...item, position: { ...item.position, x: item.position.x + 0.75 } } : item);
+  ].map((item) => item.position.x >= 4.5 ? { ...item, position: { ...item.position, x: item.position.x + 0.75 } } : item).map(migrateFurniture);
 };
 
 export function createDesign(name: string): Design {
