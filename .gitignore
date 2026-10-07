@@ -1,0 +1,12 @@
+/reference/
+/plans/
+.DS_Store
+node_modules/
+dist/
+data/
+*.db
+*.db-shm
+*.db-wal
+test-results/
+playwright-report/
+.env
