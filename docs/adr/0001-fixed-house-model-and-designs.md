@@ -34,6 +34,7 @@ Version 4 adds the confirmed ground-floor fittings, patio doors, and lounge furn
 Expand the central block by 60 centimetres across both floors. Keep the kitchen and lounge widths.
 Use one staircase across both floors. Its lower flight enters from the hallway and turns above the extended cupboard.
 Use the mirrored reference plan for doors and windows. Keep both kitchen windows and a solid wall behind the TV.
+The owner's correction places the brown sofa on the hallway wall and the lounge door near the front door.
 Reset the deployed version 3 design to the new preset with an independent database backup, as requested.
 
 ## Consequences

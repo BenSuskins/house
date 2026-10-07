@@ -38,6 +38,22 @@ describe('the room photo furniture preset', () => {
     }
   });
 
+  it('puts the brown sofa against the hallway wall clear of the lounge door and plants', () => {
+    const furniture = createDesign('My house').furniture;
+    const sofa = furniture.find((item) => item.floorId === 'ground' && item.templateId === 'sofa' && item.colour === '#56433f')!;
+    const hallway = house.floors[0].walls.find((wall) => wall.id === 'ground-hall-lounge')!;
+    expect(sofa.rotation).toBe(90);
+    const corners = furnitureCorners(sofa);
+    const left = Math.min(...corners.map((point) => point.x));
+    const right = Math.max(...corners.map((point) => point.x));
+    const back = Math.min(...corners.map((point) => point.z));
+    const front = Math.max(...corners.map((point) => point.z));
+    expect(right).toBeCloseTo(hallway.start.x - house.wallThickness / 2);
+    expect(front).toBeLessThan(hallway.start.z + hallway.openings[0].start);
+    const plants = furniture.filter((item) => item.floorId === 'ground' && item.templateId === 'plant');
+    expect(plants.every((item) => !furnitureCorners(item).some((point) => point.x > left && point.x < right && point.z > back && point.z < front))).toBe(true);
+  });
+
   it('uses the confirmed bedroom numbers for the daybed and triple-monitor desk', () => {
     const design = createDesign('My house');
     const bedroomTwo = design.furniture.filter((item) => item.floorId === 'first' && item.position.x < 3.6 && item.position.z > 2.62);

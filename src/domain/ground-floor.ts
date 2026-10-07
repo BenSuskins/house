@@ -19,7 +19,7 @@ export function correctGroundFloor(floor: HouseFloor): HouseFloor {
     if (wall.id === 'ground-cupboard-side') return { ...wall, end: { ...wall.end, z: 2.19 }, heights: { start: 0.8, end: 2.05 } };
     if (wall.id === 'ground-cupboard-door') return { ...wall, start: { ...wall.start, z: 2.19 }, end: { ...wall.end, z: 2.19 }, heights: { start: 2.1, end: 2.1 } };
     if (wall.id.startsWith('ground-back-')) return { ...wall, openings: [] };
-    if (wall.id === 'ground-hall-lounge') return { ...wall, openings: wall.openings.map((opening) => ({ ...opening, start: 2.1, swing: 1 as const })) };
+    if (wall.id === 'ground-hall-lounge') return { ...wall, openings: wall.openings.map((opening) => ({ ...opening, start: 3.5, swing: 1 as const })) };
     if (wall.id === 'ground-kitchen-hall') return { ...wall, openings: wall.openings.map((opening) => ({ ...opening, hinge: 'end' as const, swing: -1 as const })) };
     if (wall.id.startsWith('ground-right-')) return { ...wall, openings: segments(wall, [{ start: 2, width: 1.5, bottom: 0.85, height: 1.2, type: 'window' }]) };
     if (wall.id.startsWith('ground-left-')) return { ...wall, openings: segments(wall, [

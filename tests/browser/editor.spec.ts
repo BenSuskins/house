@@ -11,6 +11,9 @@ test('opens the photo furniture preset on both floors', async ({ page, request }
   await expect(page.getByTestId('scene')).toHaveAttribute('data-ready', 'true');
   await page.screenshot({ path: 'test-results/photo-preset-ground.png' });
   await page.getByRole('button', { name: 'Rooms', exact: true }).click();
+  await page.getByRole('button', { name: 'Select Three-seat sofa 1', exact: true }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Position X', exact: true })).toHaveValue('2.99');
+  await expect(page.getByRole('spinbutton', { name: 'Rotation', exact: true })).toHaveValue('90');
   await page.getByRole('button', { name: /^Select Corner cabinet / }).click();
   await expect(page.getByRole('spinbutton', { name: 'Position Z', exact: true })).toHaveValue('4.75');
   await page.getByRole('button', { name: /^Select Wall shelves / }).click();

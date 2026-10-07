@@ -16,10 +16,11 @@ describe('the confirmed ground floor', () => {
     expect(openings.filter((opening) => opening.type === 'door').reduce((sum, opening) => sum + opening.width, 0)).toBeCloseTo(1.6);
   });
 
-  it('puts the kitchen and lounge doors opposite each other across the hallway', () => {
+  it('puts the lounge door closer to the front door along the hallway', () => {
     const kitchen = floor.walls.find((wall) => wall.id === 'ground-kitchen-hall')!;
     const lounge = floor.walls.find((wall) => wall.id === 'ground-hall-lounge')!;
-    expect(lounge.start.z + lounge.openings[0].start).toBeCloseTo(kitchen.start.z + kitchen.openings[0].start);
+    expect(lounge.start.z + lounge.openings[0].start).toBeCloseTo(3.59);
+    expect(lounge.start.z + lounge.openings[0].start).toBeGreaterThan(kitchen.start.z + kitchen.openings[0].start);
     expect(kitchen.openings[0]).toMatchObject({ hinge: 'end', swing: -1 });
     expect(lounge.openings[0]).toMatchObject({ swing: 1 });
   });

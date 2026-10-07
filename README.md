@@ -75,9 +75,10 @@ Use measured dimensions before ordering furniture. The editor is a visual plan.
 House model version 4 mirrors both floors and corrects the wardrobe, windows, and bedroom furniture.
 It adds kitchen units, a fridge, garden doors, lounge shelves, and a corner cabinet.
 The dining area has no cabinets. The table has two chairs toward the front window and two toward the kitchen.
+The brown sofa sits against the hallway wall. The lounge door sits near the front door.
 The house is 60 centimetres wider. The toilet, understairs cupboard, and hallway each gain 30 centimetres.
 The cupboard extends to the kitchen doorway. The stairs enter from the hallway and turn above the cupboard.
-The mirrored floor plan supplies the door positions and window locations, including both kitchen windows.
+The mirrored floor plan supplies the window locations, including both kitchen windows. The lounge door follows the owner's correction.
 The server migrates version 1 and 2 designs once, in a transaction.
 The migration mirrors saved furniture and swaps furniture between bedrooms two and three.
 It preserves furniture identifiers, dimensions, colours, floor finishes, and paint on retained wall faces.
