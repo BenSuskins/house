@@ -24,11 +24,12 @@ async function request(origin, path, method = 'GET', body) {
 try {
   docker('volume', 'create', volume);
   docker('run', '-d', '--name', container, '-p', '127.0.0.1::8080', '-v', `${volume}:/data`, image);
-  const origin = `http://${docker('port', container, '8080/tcp').split('\n')[0]}`;
+  let origin = `http://${docker('port', container, '8080/tcp').split('\n')[0]}`;
   await ready(origin);
   const created = await request(origin, '/api/designs', 'POST', { name: 'Container persistence check' });
   const changed = await request(origin, `/api/designs/${created.id}`, 'PUT', { ...created, name: 'Saved before restart' });
   docker('restart', container);
+  origin = `http://${docker('port', container, '8080/tcp').split('\n')[0]}`;
   await ready(origin);
   const restored = await request(origin, `/api/designs/${created.id}`);
   assert.equal(restored.name, changed.name);
