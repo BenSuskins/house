@@ -1,7 +1,7 @@
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
 import { Html, Line, OrbitControls, RoundedBox } from '@react-three/drei';
-import { CanvasTexture, Color, DoubleSide, Plane, RepeatWrapping, Shape, Vector2, Vector3, type OrthographicCamera } from 'three';
+import { CanvasTexture, Color, DoubleSide, Path, Plane, RepeatWrapping, Shape, Vector2, Vector3, type OrthographicCamera } from 'three';
 import { house } from '../domain/house';
 import { furnitureCorners, wallOverlaps } from '../domain/editor';
 import type { Design, Fitting, FloorId, FurnitureItem, HouseFloor, Point, Room, Selection, Wall } from '../domain/types';
@@ -18,13 +18,35 @@ function FurnitureModel({ item }: { item: FurnitureItem }) {
   const { width, depth, height } = item.dimensions;
   const colour = item.colour;
   const leg = darken(colour, 0.6);
+  const cushions = item.templateId === 'sofa' ? (width < 2.05 ? 2 : 3) : 1;
   const legs = (top: number) => [-1, 1].flatMap((horizontal) => [-1, 1].map((vertical) => <Block key={`${horizontal}-${vertical}`} position={[horizontal * width * 0.37, top / 2, vertical * depth * 0.36]} size={[0.055, top, 0.055]} colour={leg} />));
   if (['sofa', 'armchair', 'bench'].includes(item.templateId)) return <>
     {legs(height * 0.18)}<Block position={[0, height * 0.36, 0]} size={[width, height * 0.32, depth]} colour={darken(colour, 0.94)} round />
-    {item.templateId !== 'bench' && <><Block position={[0, height * 0.72, -depth * 0.39]} size={[width, height * 0.55, depth * 0.22]} colour={colour} round />{[-1, 1].map((side) => <Block key={side} position={[side * width * 0.45, height * 0.59, 0]} size={[width * 0.1, height * 0.42, depth]} colour={colour} round />)}{Array.from({ length: item.templateId === 'sofa' ? 3 : 1 }, (_, index) => <Block key={index} position={[(index - (item.templateId === 'sofa' ? 1 : 0)) * width * 0.26, height * 0.55, depth * 0.06]} size={[width * (item.templateId === 'sofa' ? 0.25 : 0.78), height * 0.15, depth * 0.65]} colour={colour} round />)}</>}
+    {item.templateId !== 'bench' && <><Block position={[0, height * 0.72, -depth * 0.39]} size={[width, height * 0.55, depth * 0.22]} colour={colour} round />{[-1, 1].map((side) => <Block key={side} position={[side * width * 0.45, height * 0.59, 0]} size={[width * 0.1, height * 0.42, depth]} colour={colour} round />)}{Array.from({ length: cushions }, (_, index) => <Block key={index} position={[(index - (cushions - 1) / 2) * width * 0.78 / cushions, height * 0.55, depth * 0.06]} size={[width * 0.75 / cushions, height * 0.15, depth * 0.65]} colour={colour} round />)}</>}
+  </>;
+  if (item.templateId === 'ottoman') return <><Block position={[0, height * 0.46, 0]} size={[width, height * 0.92, depth]} colour={darken(colour, 0.96)} round /><Block position={[0, height * 0.91, 0]} size={[width, height * 0.18, depth]} colour={colour} round /></>;
+  if (item.templateId === 'daybed') return <>
+    <Block position={[0, height * 0.25, 0]} size={[width, height * 0.5, depth]} colour="#eeece5" />
+    <Block position={[0, height * 0.54, 0]} size={[width * 0.96, height * 0.16, depth * 0.92]} colour={colour} round />
+    <Block position={[0, height * 0.72, -depth * 0.46]} size={[width, height * 0.56, depth * 0.08]} colour="#eeece5" />
+    {[-1, 1].map((side) => <group key={side}><Block position={[side * width * 0.48, height * 0.6, 0]} size={[width * 0.04, height * 0.68, depth]} colour="#eeece5" /><Block position={[side * width * 0.24, height * 0.25, depth * 0.51]} size={[width * 0.12, 0.035, 0.015]} colour="#b6b7ad" /></group>)}
+  </>;
+  if (item.templateId === 'computer-desk') {
+    const surface = height * 0.64;
+    return <>{legs(surface)}<Block position={[0, surface, 0]} size={[width, 0.055, depth]} colour={colour} />
+      {[-1, 0, 1].map((side) => <group key={side} position={[side * width * 0.3, 0, -depth * 0.27]} rotation={[0, -side * 0.16, 0]}><Block position={[0, surface + height * 0.08, 0]} size={[0.035, height * 0.16, 0.035]} colour="#444a48" /><Block position={[0, height * 0.86, 0]} size={[width * 0.29, height * 0.28, 0.04]} colour="#252d30" /><Block position={[0, height * 0.86, 0.025]} size={[width * 0.265, height * 0.245, 0.006]} colour="#43565b" /></group>)}
+      <Block position={[0, surface + 0.038, depth * 0.24]} size={[width * 0.3, 0.018, depth * 0.25]} colour="#404644" />
+    </>;
+  }
+  if (item.templateId === 'media-unit') return <>
+    <Block position={[0, height * 0.25, 0]} size={[width, height * 0.28, depth]} colour={colour} />
+    <Block position={[0, height * 0.4, 0]} size={[width, 0.045, depth]} colour="#ac784d" />
+    {[-1, 1].map((side) => <Block key={side} position={[side * width / 6, height * 0.25, depth * 0.505]} size={[0.012, height * 0.26, 0.01]} colour={darken(colour)} />)}
+    <Block position={[0, height * 0.76, -depth * 0.3]} size={[width * 0.46, height * 0.4, 0.05]} colour="#28312f" />
+    <Block position={[0, height * 0.76, -depth * 0.3 + 0.03]} size={[width * 0.435, height * 0.36, 0.006]} colour="#53665d" />
   </>;
   if (['dining-chair', 'desk-chair'].includes(item.templateId)) return <>{legs(height * 0.47)}<Block position={[0, height * 0.52, 0]} size={[width, height * 0.12, depth]} colour={colour} round /><Block position={[0, height * 0.78, -depth * 0.44]} size={[width, height * 0.44, depth * 0.12]} colour={colour} round /></>;
-  if (['dining-table', 'coffee-table', 'desk', 'bedside-table'].includes(item.templateId)) return <>{legs(height * 0.9)}<Block position={[0, height * 0.95, 0]} size={[width, height * 0.1, depth]} colour={colour} round />{item.templateId === 'bedside-table' && <Block position={[0, height * 0.6, 0]} size={[width * 0.9, height * 0.5, depth * 0.9]} colour={colour} />}</>;
+  if (['dining-table', 'coffee-table', 'desk', 'bedside-table', 'stool'].includes(item.templateId)) return <>{legs(height * 0.9)}<Block position={[0, height * 0.95, 0]} size={[width, height * 0.1, depth]} colour={colour} round />{item.templateId === 'bedside-table' && <Block position={[0, height * 0.6, 0]} size={[width * 0.9, height * 0.5, depth * 0.9]} colour={colour} />}</>;
   if (item.templateId.includes('bed')) return <>
     <Block position={[0, height * 0.34, 0]} size={[width, height * 0.5, depth]} colour="#b5a58e" round />
     <Block position={[0, height * 0.65, 0]} size={[width * 0.97, height * 0.25, depth * 0.97]} colour="#f5f1e8" round />
@@ -138,9 +160,18 @@ function FixedFitting({ fitting }: { fitting: Fitting }) {
 }
 
 function Stairs({ floor }: { floor: HouseFloor }) {
-  return <group position={[floor.id === 'ground' ? 4.67 : 3.64, floor.id === 'ground' ? 0 : -1.0, 0.28]}>
-    {Array.from({ length: 10 }, (_, index) => <Block key={index} position={[0, (index + 1) * 0.10, index * 0.18]} size={[floor.id === 'ground' ? 0.77 : 0.65, 0.1, 0.19]} colour={index % 2 ? '#d8d2c4' : '#e4dfd2'} />)}
+  return <group position={[floor.id === 'ground' ? 4.67 : 3.95, floor.id === 'ground' ? 0 : -1.0, 0.28]}>
+    {Array.from({ length: 10 }, (_, index) => <Block key={index} position={[0, (index + 1) * 0.10, index * 0.18]} size={[floor.id === 'ground' ? 0.77 : 0.74, 0.1, 0.19]} colour={index % 2 ? '#d8d2c4' : '#e4dfd2'} />)}
   </group>;
+}
+
+function FloorSlab({ floor }: { floor: HouseFloor }) {
+  const shape = useMemo(() => {
+    const outline = new Shape([new Vector2(0, 0), new Vector2(house.width, 0), new Vector2(house.width, -house.depth), new Vector2(0, -house.depth)]);
+    if (floor.stairwell) outline.holes.push(new Path(floor.stairwell.map((point) => new Vector2(point.x, -point.z))));
+    return outline;
+  }, [floor]);
+  return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.18, 0]} receiveShadow><extrudeGeometry args={[shape, { depth: 0.18, bevelEnabled: false }]} /><meshStandardMaterial color="#d7d2c7" roughness={0.95} /></mesh>;
 }
 
 function CameraRig({ view, resetToken, zoomToken }: Pick<SceneProps, 'view' | 'resetToken' | 'zoomToken'>) {
@@ -171,7 +202,7 @@ export function Scene(props: SceneProps) {
   return <div className="scene" data-testid="scene" data-ready={ready}>
     <SceneBoundary><Canvas orthographic shadows frameloop="demand" dpr={[1, 1.5]} camera={{ position: [14, 12, 14], near: 0.1, far: 100 }} gl={{ antialias: true, alpha: true }} onCreated={() => setReady(true)} onPointerMissed={() => props.select(null)}>
       <ambientLight intensity={1.35} /><hemisphereLight args={['#ffffff', '#d0c9b8', 1.0]} /><directionalLight position={[-3, 10, 2]} intensity={2.1} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-bias={-0.001} shadow-normalBias={0.025} />
-      {(floor.id === 'first' ? [[0, 0, 3.29, house.depth], [3.99, 0, house.width, house.depth], [3.29, 0, 3.99, 0.18], [3.29, 2.08, 3.99, house.depth]] : [[0, 0, house.width, house.depth]]).map(([left, top, right, bottom], index) => <mesh key={index} position={[(left + right) / 2, -0.09, (top + bottom) / 2]} receiveShadow><boxGeometry args={[right - left, 0.18, bottom - top]} /><meshStandardMaterial color="#d7d2c7" roughness={0.95} /></mesh>)}
+      <FloorSlab floor={floor} />
       {floor.rooms.map((room) => <RoomFloor key={room.id} room={room} design={props.design} select={props.select} selected={props.selection?.type === 'room' && props.selection.id === room.id} />)}
       {props.walls !== 'hidden' && floor.walls.map((wall) => <WallModel key={wall.id} wall={wall} design={props.design} height={wallHeight} selection={props.selection} select={props.select} />)}
       {floor.fittings.map((fitting) => <FixedFitting key={fitting.id} fitting={fitting} />)}<Stairs floor={floor} />

@@ -4,13 +4,13 @@ import { house } from '../src/domain/house';
 
 describe('the house editor', () => {
   it('names wall faces for the room on their physical side', () => {
-    const expected: Record<string, string[]> = {
+    const expected: Record<string, (string | null)[]> = {
       'ground-wc-front': ['ground-wc', 'ground-hall'],
       'first-ensuite-bedroom': ['first-ensuite', 'first-wardrobe'],
       'first-bedrooms-divider': ['first-bedroom-two', 'first-bedroom-three'],
       'first-bathroom-landing': ['first-bathroom', 'first-landing'],
       'first-cupboard-front': ['first-landing', 'first-cupboard'],
-      'first-cupboard-back': ['first-cupboard', 'first-landing'],
+      'first-cupboard-back': ['first-cupboard', null],
     };
     for (const [id, roomIds] of Object.entries(expected)) {
       const wall = house.floors.flatMap((floor) => floor.walls).find((wall) => wall.id === id)!;
@@ -32,7 +32,7 @@ describe('the house editor', () => {
 
   it('moves and rotates furniture with grid snapping without moving furniture on another floor', () => {
     const original = createDesign('One');
-    const chair = original.furniture.find((item) => item.templateId === 'armchair')!;
+    const chair = original.furniture.find((item) => item.templateId === 'dining-chair')!;
     const changed = editDesign(original, { type: 'update-furniture', itemId: chair.id, patch: { position: { x: 6.04, z: 2.06 }, rotation: 450 }, snap: true });
     expect(changed.ok).toBe(true);
     if (!changed.ok) return;
@@ -42,7 +42,7 @@ describe('the house editor', () => {
 
   it('allows a wall overlap with a warning, but rejects a rotated item outside the floor', () => {
     const original = createDesign('One');
-    const chair = original.furniture.find((item) => item.templateId === 'armchair')!;
+    const chair = original.furniture.find((item) => item.templateId === 'dining-chair')!;
     const changed = editDesign(original, { type: 'update-furniture', itemId: chair.id, patch: { position: { x: 3.44, z: 1.6 } } });
     expect(changed.ok).toBe(true);
     if (!changed.ok) return;

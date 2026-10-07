@@ -1,6 +1,52 @@
 import { expect, test } from '@playwright/test';
 import { OrthographicCamera, Vector3 } from 'three';
 import type { Design, HouseModel } from '../../src/domain/types';
+import { house as previousHouse } from '../../src/domain/house-version-one';
+
+test('opens the photo furniture preset on both floors', async ({ page, request }) => {
+  const response = await request.post('/api/designs', { data: { name: 'Photo furniture' } });
+  const design = await response.json() as Design;
+  await page.addInitScript((id) => localStorage.setItem('house-last-design', id), design.id);
+  await page.goto('/');
+  await expect(page.getByTestId('scene')).toHaveAttribute('data-ready', 'true');
+  await page.screenshot({ path: 'test-results/photo-preset-ground.png' });
+  await page.getByRole('button', { name: 'Rooms', exact: true }).click();
+  await page.getByRole('button', { name: /^Select Upholstered ottoman / }).click();
+  await expect(page.getByRole('textbox', { name: 'Furniture colour hex' })).toHaveValue('#bdb7ad');
+  await page.getByRole('button', { name: 'First floor', exact: true }).click();
+  await page.getByRole('button', { name: 'Top', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Top', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Top', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await page.screenshot({ path: 'test-results/photo-preset-first-top.png' });
+  await page.getByRole('button', { name: 'Rooms', exact: true }).click();
+  await page.getByRole('button', { name: /^Select Storage daybed / }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Position Z', exact: true })).toHaveValue('4.64');
+  await page.getByRole('button', { name: /^Select Triple-monitor desk / }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Position Z', exact: true })).toHaveValue('1.05');
+  await page.getByRole('button', { name: /^Select Bookcase / }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Position Z', exact: true })).toHaveValue('2.87');
+  await expect(page.getByRole('spinbutton', { name: 'Rotation', exact: true })).toHaveValue('0');
+  await page.getByRole('button', { name: '3D', exact: true }).click();
+  await page.getByRole('button', { name: 'Close properties', exact: true }).click();
+  await expect(page.getByRole('button', { name: '3D', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await page.screenshot({ path: 'test-results/photo-preset-first-3d.png' });
+});
+
+test('recovers a browser draft from the previous house model as a new design', async ({ page, request }) => {
+  const response = await request.post('/api/designs', { data: { name: 'Before the model update' } });
+  const original = await response.json() as Design;
+  await request.put(`/api/designs/${original.id}`, { data: original });
+  const draft = { baseRevision: 1, design: { ...original, houseVersion: 1, name: 'Room photo draft', wallColours: Object.fromEntries(previousHouse.floors.flatMap((floor) => floor.walls.flatMap((wall) => wall.faces.map((face) => [face.id, '#ccddee'])))) } };
+  await page.addInitScript(({ id, draft }) => { localStorage.setItem('house-last-design', id); localStorage.setItem(`house-draft-${id}`, JSON.stringify(draft)); }, { id: original.id, draft });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Recover as new design', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Design name', exact: true })).toHaveValue('Room photo draft recovered');
+  const designs = await (await request.get('/api/designs')).json();
+  const recovered = await (await request.get(`/api/designs/${designs.find((design: Design) => design.name === 'Room photo draft recovered').id}`)).json();
+  expect(recovered.houseVersion).toBe(2);
+  expect(recovered.furniture).toEqual(original.furniture);
+  expect(recovered.wallColours['first-bedrooms-divider-0']).toBe('#ccddee');
+});
 
 test('furnishes both floors and restores their finishes on a second device', async ({ page, browser }) => {
   const errors: string[] = [];

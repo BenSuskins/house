@@ -4,7 +4,7 @@ import { api } from './api';
 import { catalogue } from './domain/catalogue';
 import { house } from './domain/house';
 import { createHistory, editDesign, recordEdit, undo, redo, type Edit, type History } from './domain/editor';
-import { validateContent } from './domain/validation';
+import { migrateContent } from './domain/migration';
 import { browserDrafts, contentKey, createAutosave, type Draft, type SaveStatus } from './saving/autosave';
 import type { Design, DesignSummary, FloorId, HouseModel, Point, Selection } from './domain/types';
 import { Inspector } from './components/Inspector';
@@ -48,7 +48,9 @@ export function App() {
     setSaveStatus({ phase: 'saved', draftAvailable: true });
     setHistory(createHistory(design)); setName(design.name); setSelection(null); setPreview(null); setSheet(null); remember(design.id);
     const draft = browserDrafts.read(design.id);
-    if (draft?.design?.id === design.id && Number.isInteger(draft.baseRevision) && validateContent(draft.design).ok && contentKey(draft.design) !== contentKey(design)) setRecovery(draft);
+    const migrated = draft?.design ? migrateContent(draft.design) : undefined;
+    const recoveredDesign = draft && migrated?.ok ? { ...draft.design, ...migrated.value } : undefined;
+    if (draft?.design?.id === design.id && Number.isInteger(draft.baseRevision) && recoveredDesign && contentKey(recoveredDesign) !== contentKey(design)) setRecovery({ ...draft, design: recoveredDesign });
     else { setRecovery(null); browserDrafts.clear(design.id); }
   }, []);
 

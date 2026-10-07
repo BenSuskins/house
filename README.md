@@ -43,6 +43,12 @@ Door openings do not trigger a wall warning.
 ## Save designs
 
 The server creates one furnished starter design when it initializes the database.
+New designs use a furniture preset based on the room photos. The furniture dimensions and positions are estimates.
+Bedroom two contains the desk and storage daybed. Bedroom three contains the sofa and triple-monitor desk.
+Bedroom two has one window and a bookcase against the shared wall. Bedroom three has two windows and no bookcase.
+The lounge contains two sofas, an ottoman, a coffee table, and a TV unit.
+The main bedroom contains the bed, bedside tables, dressing table, and wardrobes.
+Dining furniture follows the illustrated plan because the room photos do not show it.
 Use the Designs panel to create, open, or delete a design. Change its name in the header.
 Use **Save a copy** to duplicate the current design.
 
@@ -59,7 +65,13 @@ Drafts depend on browser storage. The editor reports when that storage is unavai
 The house model follows the local illustrated plans. Listed dimensions guide it where they are consistent.
 Unknown measurements, including wall thickness, openings, stairs, and fittings, are estimates.
 The kitchen width is estimated at 3.17 metres because the listed 1.17 metres conflicts with the plan proportions.
+The first floor follows the stepped bedroom boundaries and L-shaped landing in the plan.
+The listed bedroom dimensions guide their main areas. Missing recess and passage dimensions remain estimates.
 Use measured dimensions before ordering furniture. The editor is a visual plan.
+
+House model version 2 corrects the first floor. The server migrates version 1 designs once, in a transaction.
+The migration preserves furniture, floor finishes, and wall colours by room and wall side. New wall faces use neutral paint.
+The browser can recover a draft from version 1 as a new design. Review furniture positions against the corrected walls.
 
 The private files stay in ignored `reference/`. The app does not serve or copy them.
 The Docker build context uses a file allowlist. It excludes references, plans, databases, and local environment files.

@@ -6,23 +6,36 @@ export const identifier = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now
 export const failure = (code: string, message: string): Result<never> => ({ ok: false, error: { code, message } });
 
 const starterFurniture = (): FurnitureItem[] => {
-  const place = (templateId: string, floorId: FurnitureItem['floorId'], x: number, z: number, rotation = 0): FurnitureItem => {
+  const place = (templateId: string, floorId: FurnitureItem['floorId'], x: number, z: number, rotation = 0, properties: Partial<Pick<FurnitureItem, 'dimensions' | 'colour'>> = {}): FurnitureItem => {
     const template = catalogue.find((template) => template.id === templateId)!;
-    return { id: identifier(), templateId, floorId, position: { x, z }, dimensions: { ...template.dimensions }, rotation, colour: template.colour };
+    return { id: identifier(), templateId, floorId, position: { x, z }, dimensions: { ...template.dimensions }, rotation, colour: template.colour, ...properties };
   };
   return [
-    place('sofa', 'ground', 6.5, 4.42, 180), place('armchair', 'ground', 5.42, 2.5, 270),
-    place('rug', 'ground', 6.55, 3.08), place('coffee-table', 'ground', 6.55, 3.08),
-    place('tv-stand', 'ground', 6.5, 0.48), place('floor-lamp', 'ground', 7.73, 4.7),
-    place('plant', 'ground', 7.7, 0.45), place('dining-table', 'ground', 1.62, 3.62),
+    place('sofa', 'ground', 7.6, 2.6, 90, { dimensions: { width: 1.95, depth: 0.9, height: 0.85 }, colour: '#56433f' }),
+    place('sofa', 'ground', 5.28, 2.4, 270, { dimensions: { width: 2.15, depth: 0.87, height: 0.85 }, colour: '#c2bcb4' }),
+    place('ottoman', 'ground', 6.45, 3.15),
+    place('coffee-table', 'ground', 6.45, 2.2, 0, { dimensions: { width: 0.75, depth: 0.55, height: 0.43 }, colour: '#ac784d' }),
+    place('media-unit', 'ground', 6.45, 0.48),
+    place('plant', 'ground', 7.77, 1), place('plant', 'ground', 6.35, 4.77),
+    place('dining-table', 'ground', 1.62, 3.62),
     place('dining-chair', 'ground', 1.62, 2.86), place('dining-chair', 'ground', 1.62, 4.38, 180),
     place('dining-chair', 'ground', 0.61, 3.62, 270), place('dining-chair', 'ground', 2.63, 3.62, 90),
     place('plant', 'ground', 2.99, 4.77),
-    place('double-bed', 'first', 1.64, 1.56), place('bedside-table', 'first', 0.55, 0.67),
-    place('bedside-table', 'first', 2.73, 0.67), { ...place('wardrobe', 'first', 1.62, 3.7), dimensions: { width: 2.5, depth: 0.4, height: 1.9 } },
-    place('single-bed', 'first', 6.76, 1.34), place('bedside-table', 'first', 5.71, 0.65),
-    place('double-bed', 'first', 6.75, 3.87, 90), place('bedside-table', 'first', 7.45, 2.98),
-    place('drawers', 'first', 5.26, 4.68, 90),
+    place('stool', 'ground', 3.8, 4.11),
+    place('double-bed', 'first', 1.78, 1.49, 0, { colour: '#b2a491' }),
+    place('bedside-table', 'first', 0.6, 0.75, 0, { dimensions: { width: 0.45, depth: 0.4, height: 0.65 }, colour: '#958064' }),
+    place('bedside-table', 'first', 2.88, 0.75, 0, { dimensions: { width: 0.45, depth: 0.4, height: 0.65 }, colour: '#958064' }),
+    place('wardrobe', 'first', 1.45, 3.53, 180, { dimensions: { width: 2.36, depth: 0.44, height: 2.15 }, colour: '#eeeae3' }),
+    place('desk', 'first', 0.48, 2.13, 90, { dimensions: { width: 1.05, depth: 0.4, height: 0.78 }, colour: '#958064' }),
+    place('daybed', 'first', 6.19, 4.64, 180),
+    place('desk', 'first', 7.69, 3.61, 270, { dimensions: { width: 1.45, depth: 0.6, height: 0.75 }, colour: '#ded8c9' }),
+    place('desk-chair', 'first', 6.97, 3.65, 270, { colour: '#303c39' }),
+    place('bookcase', 'first', 6.45, 2.87, 0, { colour: '#a68f6c' }),
+    place('drawers', 'first', 7.72, 4.75, 270, { dimensions: { width: 0.5, depth: 0.35, height: 0.75 }, colour: '#ded8c9' }),
+    place('sofa', 'first', 7.6, 1.2, 90, { dimensions: { width: 2, depth: 0.9, height: 0.78 }, colour: '#30383b' }),
+    place('computer-desk', 'first', 5.11, 1.05, 270),
+    place('desk-chair', 'first', 5.92, 1.05, 90, { colour: '#30383b' }),
+    place('floor-lamp', 'first', 6.85, 0.38, 0, { dimensions: { width: 0.28, depth: 0.28, height: 1.4 }, colour: '#ebe1cf' }),
   ].map((item) => item.position.x >= 4.5 ? { ...item, position: { ...item.position, x: item.position.x + 0.75 } } : item);
 };
 

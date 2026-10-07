@@ -1,10 +1,10 @@
 export function FurnitureThumbnail({ type, colour }: { type: string; colour: string }) {
   const bed = type.includes('bed') && type !== 'bedside-table';
   const seating = ['sofa', 'armchair', 'bench', 'dining-chair', 'desk-chair'].includes(type);
-  const table = type.includes('table') || type === 'desk';
+  const table = type.includes('table') || type.endsWith('desk') || type === 'stool';
   return <svg viewBox="0 0 100 76" aria-hidden="true" className="furniture-thumbnail">
     <ellipse cx="50" cy="61" rx="34" ry="7" fill="#dad6cc" opacity=".4" />
-    {seating ? <g>
+    {type === 'ottoman' ? <g><path d="M20 32 61 20 82 34 41 48Z" fill={colour} /><path d="M20 32V53L41 65V48Z M41 48 82 34V52L41 65Z" fill={colour} style={{ filter: 'brightness(.9)' }} /></g> : seating ? <g>
       <path d="M18 31 65 19 86 32 39 46Z" fill={colour} />
       <path d="M18 31V50L39 62V46Z" fill={colour} style={{ filter: 'brightness(.8)' }} />
       <path d="M39 46 86 32V51L39 62Z" fill={colour} style={{ filter: 'brightness(.92)' }} />
@@ -26,9 +26,11 @@ export function FurnitureThumbnail({ type, colour }: { type: string; colour: str
     </g> : type === 'rug' ? <g><path d="M12 40 57 19 90 41 45 64Z" fill={colour} /><path d="M18 41 56 25 83 42 45 58Z" fill="none" stroke="#a99980" opacity=".5" /></g> : table ? <g>
       <path d="M23 39V60 M78 32V54 M46 49V68" stroke="#9d896c" strokeWidth="4" />
       <path d="M14 32 65 15 88 32 38 50Z" fill={colour} /><path d="M14 32V37L38 55V50Z M38 50 88 32V37L38 55Z" fill={colour} style={{ filter: 'brightness(.85)' }} />
+      {type === 'computer-desk' && <g fill="#35413f" stroke="#52625c" strokeWidth="1"><path d="M22 16 36 12V27L22 31Z M38 11 52 7V22L38 26Z M54 6 68 2V17L54 21Z" /></g>}
     </g> : <g>
       <path d="M25 19 65 10 81 22 42 33Z" fill={colour} /><path d="M25 19V53L42 65V33Z" fill={colour} style={{ filter: 'brightness(.85)' }} /><path d="M42 33 81 22V54L42 65Z" fill={colour} />
       <path d="M62 29V59 M45 45 78 35" stroke="#9c8c78" opacity=".6" /><circle cx="59" cy="45" r="1.5" fill="#8a7f6e" /><circle cx="66" cy="42" r="1.5" fill="#8a7f6e" />
+      {type === 'media-unit' && <path d="M30 3 72 0V25L30 32Z" fill="#35413f" />}
     </g>}
   </svg>;
 }

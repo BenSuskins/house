@@ -40,6 +40,12 @@ A kitchen or bathroom fitting in the house model. A design cannot move it.
 **Furniture catalogue**:
 The generic furniture types available to add to a design.
 
+**Furniture preset**:
+The furniture arrangement that a new design uses. It follows the room photos, with estimated dimensions and positions.
+
+**Stair opening**:
+The hole in the first-floor slab above the stairs.
+
 **Design**:
 A named set of wall colours, floor finishes, and furniture items for both floors.
 _Avoid_: Layout, project, scene when the term means a saved design

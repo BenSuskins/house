@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { createDesign, failure, identifier } from '../src/domain/editor';
 import { validateContent } from '../src/domain/validation';
+import { migrateContent } from '../src/domain/migration';
 import type { Design, DesignContent, DesignSummary, Result } from '../src/domain/types';
 
 export interface DesignStore {
@@ -61,6 +62,13 @@ export class SqliteDesignStore implements DesignStore {
     this.database.pragma('busy_timeout = 5000');
     this.database.exec('CREATE TABLE IF NOT EXISTS designs (id TEXT PRIMARY KEY, revision INTEGER NOT NULL, updated_at TEXT NOT NULL, content TEXT NOT NULL); CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);');
     this.database.transaction(() => {
+      for (const row of this.database.prepare('SELECT * FROM designs').all() as DatabaseRow[]) {
+        const content = JSON.parse(row.content) as DesignContent;
+        if (content.houseVersion !== 1) continue;
+        const migrated = migrateContent(content);
+        if (!migrated.ok) throw new Error(migrated.error.message);
+        this.database.prepare('UPDATE designs SET content = ?, revision = ?, updated_at = ? WHERE id = ?').run(JSON.stringify(migrated.value), row.revision + 1, new Date().toISOString(), row.id);
+      }
       if (!this.database.prepare('SELECT value FROM metadata WHERE key = ?').get('seeded')) {
         if (!(this.database.prepare('SELECT id FROM designs LIMIT 1').get())) {
           const initial = this.create(createDesign('Reference layout'));
