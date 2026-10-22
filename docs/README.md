@@ -1,8 +1,10 @@
 # House
 
-A private editor for the ground floor and first floor of this house.
-Use the 3D cutaway or top view to place furniture, paint wall faces, and change room floors.
-Named designs save to the home server and cover both floors.
+> A private 3D editor for planning furniture and room finishes across two floors of a home.
+
+## Overview
+
+House is a browser-based editor for a fixed two-floor home model. It lets the owner arrange furniture, change room finishes, and save named designs to a home server.
 
 ## Run locally
 
