@@ -1,8 +1,10 @@
 # House
 
-A private editor for the ground floor and first floor of this house.
-Use the 3D cutaway or top view to place furniture, paint wall faces, and change room floors.
-Named designs save to the home server and cover both floors.
+> A private 3D editor for planning furniture and room finishes across two floors of a home.
+
+## Overview
+
+House is a browser-based editor for a fixed two-floor home model. It lets the owner arrange furniture, change room finishes, and save named designs to a home server.
 
 ## Run locally
 
@@ -89,7 +91,7 @@ The private files stay in ignored `reference/`. The app does not serve or copy t
 The Docker build context uses a file allowlist. It excludes references, plans, databases, and local environment files.
 All furniture models, thumbnails, textures, icons, and fonts are local. The browser does not request remote assets.
 
-See [ADR 0001](docs/adr/0001-fixed-house-model-and-designs.md) and the [glossary](GLOSSARY.md).
+See [ADR 0001](adr/0001-fixed-house-model-and-designs.md) and the [glossary](../GLOSSARY.md).
 
 ## Verify
 
@@ -146,10 +148,19 @@ Check LAN and Tailscale access. Confirm that an unauthenticated proxy request re
 
 ## CI and publication
 
-The [workflow](.github/workflows/checks.yml) runs tests and a production build on pull requests and pushes to `main`.
+The [workflow](../.github/workflows/checks.yml) runs tests and a production build on pull requests and pushes to `main`.
 It builds a Docker image and checks health, persistence, and reference exclusion.
 After checks pass on `main`, it publishes the tested image as `ghcr.io/bensuskins/house:latest` and a commit tag.
 It uses `GITHUB_TOKEN` with package write permission. Configure home-server GHCR access if the package is private.
 See the [official Docker action documentation](https://github.com/docker/build-push-action) for the build action.
 
 Structural edits, branded furniture, model uploads, walkthroughs, and an exterior view are outside this release.
+
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
+
+## License
+
+No license file is present. All rights remain with the author.
